@@ -22,6 +22,7 @@ on:
         frappe_branch:
           description: 'Frappe Framework branch'
           required: false
+          default: 'develop'
           type: string
         erpnext_user:
           description: 'ERPNext repository user (add your username for forks)'
@@ -31,6 +32,7 @@ on:
         erpnext_branch:
           description: 'ERPNext branch'
           required: false
+          default: 'develop'
           type: string
 
     pull_request:
