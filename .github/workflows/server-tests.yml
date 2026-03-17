@@ -12,6 +12,26 @@ on:
       secrets:
         codecov_token:
 
+    workflow_dispatch:
+      inputs:
+        frappe_user:
+          description: 'Frappe Framework repository user (add your username for forks)'
+          required: false
+          default: 'frappe'
+          type: string
+        frappe_branch:
+          description: 'Frappe Framework branch'
+          required: false
+          type: string
+        erpnext_user:
+          description: 'ERPNext repository user (add your username for forks)'
+          required: false
+          default: 'frappe'
+          type: string
+        erpnext_branch:
+          description: 'ERPNext branch'
+          required: false
+          type: string
 
     pull_request:
         paths-ignore:
@@ -32,6 +52,10 @@ on:
 env:
     BRANCH: ${{ inputs.base_ref || github.base_ref || github.ref_name }}
     APP_NAME: ${{ inputs.app_name || 'india_compliance' }}
+
+concurrency:
+    group: server-tests-${{ github.event_name }}-${{ github.event.number || github.event_name == 'workflow_dispatch' && github.run_id || '' }}
+    cancel-in-progress: true
 
 jobs:
     tests:
@@ -108,6 +132,10 @@ jobs:
                   bash ${GITHUB_WORKSPACE}/.github/helper/install.sh
               env:
                   BRANCH_TO_CLONE: ${{ env.BRANCH }}
+                  FRAPPE_USER: ${{ github.event.inputs.frappe_user }}
+                  FRAPPE_BRANCH: ${{ github.event.inputs.frappe_branch }}
+                  ERPNEXT_USER: ${{ github.event.inputs.erpnext_user }}
+                  ERPNEXT_BRANCH: ${{ github.event.inputs.erpnext_branch }}
 
             - name: Run Tests
               run: cd ~/frappe-bench/ && bench --site test_site run-parallel-tests --app ${{ env.APP_NAME }} --with-coverage

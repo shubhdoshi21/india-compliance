@@ -27,7 +27,18 @@ wkpid=$!
 
 pip install frappe-bench
 
-git clone "https://github.com/frappe/frappe" --branch "$BRANCH_TO_CLONE" --depth 1
+githubbranch=${GITHUB_BASE_REF:-${GITHUB_REF##*/}}
+frappeuser=${FRAPPE_USER:-"frappe"}
+frappecommitish=${FRAPPE_BRANCH:-${BRANCH_TO_CLONE:-$githubbranch}}
+
+mkdir frappe
+pushd frappe
+git init
+git remote add origin "https://github.com/${frappeuser}/frappe"
+git fetch origin "${frappecommitish}" --depth 1
+git checkout FETCH_HEAD
+popd
+
 bench init --skip-assets --frappe-path ~/frappe --python "$(which python)" frappe-bench
 
 mkdir ~/frappe-bench/sites/test_site
@@ -53,7 +64,18 @@ sed -i 's/schedule:/# schedule:/g' Procfile
 sed -i 's/socketio:/# socketio:/g' Procfile
 sed -i 's/redis_socketio:/# redis_socketio:/g' Procfile
 
-bench get-app erpnext --branch "$BRANCH_TO_CLONE" --resolve-deps
+erpnextuser=${ERPNEXT_USER:-"frappe"}
+erpnextcommitish=${ERPNEXT_BRANCH:-${BRANCH_TO_CLONE:-$githubbranch}}
+
+mkdir erpnext
+pushd erpnext
+git init
+git remote add origin "https://github.com/${erpnextuser}/erpnext"
+git fetch origin "${erpnextcommitish}" --depth 1
+git checkout FETCH_HEAD
+popd
+
+bench get-app erpnext ~/frappe-bench/erpnext --resolve-deps
 bench get-app india_compliance "${GITHUB_WORKSPACE}"
 bench setup requirements --dev
 
